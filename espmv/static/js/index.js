@@ -32,9 +32,9 @@ var styleFunction = function (feature) {
   // console.log(feature.getGeometry().getKeys());
   return new Style({
     stroke: new Stroke({
-      color: "blue",
-      lineDash: [4],
-      width: 1,
+      color: "red",
+      // lineDash: [4],
+      width: 0.1,
     }),
     fill: new Fill({
       color: "rgba(0, 0, 255, 0.1)",
