@@ -29,7 +29,9 @@ const STYLES = {
 const INITIAL_COORDS = [-119.6, 36.6];
 const INITIAL_ZOOM = 6;
 const BASE_LAYER = new TileLayer({
-  source: new OSM(),
+  source: new OSM({
+    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png",
+  }),
 });
 
 let COUNTIES_BASEMAP_DATA, COUNTIES_DATA;
