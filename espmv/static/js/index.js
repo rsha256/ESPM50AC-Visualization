@@ -13,19 +13,21 @@ const GEOJSON_CONFIG = {
 };
 const INITIAL_COORDS = [-119.6, 36.6];
 const INITIAL_ZOOM = 6;
+const BASE_LAYER = new TileLayer({
+  source: new OSM(),
+});
+
+let COUNTIES_BASEMAP_DATA, COUNTIES_DATA;
+let CURRENT_STAT = "population";
 
 const map = new Map({
-  layers: [
-    new TileLayer({
-      source: new OSM(),
-    }),
-  ],
+  layers: [BASE_LAYER],
   target: "mainMap",
 });
 map.getView().setCenter(ol.proj.transform(INITIAL_COORDS, "EPSG:4326", "EPSG:3857"));
 map.getView().setZoom(INITIAL_ZOOM);
 
-var styleFunction = function (feature) {
+var getStyleForFeature = function (feature) {
   return new Style({
     stroke: new Stroke({
       color: "red",
@@ -38,30 +40,43 @@ var styleFunction = function (feature) {
   });
 };
 
+function renderLayers() {
+  map.getLayers().forEach(layer => map.removeLayer(layer));
+  map.addLayer(BASE_LAYER);
+
+  const countiesData = COUNTIES_BASEMAP_DATA;
+
+  const features = countiesData.map(county => {
+    const coords = JSON.parse(JSON.stringify(county.geometry.map(c => c.map(p => parseFloat(p)))));
+    const feature = new GeoJSON(GEOJSON_CONFIG).readFeature({
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [coords],
+      },
+    });
+    feature.set("data", {});
+    return feature;
+  });
+
+  var vectorLayer = new VectorLayer({
+    source: new VectorSource({ features }),
+    style: getStyleForFeature,
+  });
+
+  map.addLayer(vectorLayer);
+}
+
 axios
   .get("/static/data/counties_basemap.json")
   .then(res => {
-    console.log("county map dl complete ");
-    const countiesData = res.data;
-
-    const features = countiesData.map(county => {
-      const coords = JSON.parse(JSON.stringify(county.geometry.map(c => c.map(p => parseFloat(p)))));
-      const feature = new GeoJSON(GEOJSON_CONFIG).readFeature({
-        type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: [coords],
-        },
-      });
-      feature.set("data", {});
-      return feature;
-    });
-
-    var vectorLayer = new VectorLayer({
-      source: new VectorSource({ features }),
-      style: styleFunction,
-    });
-
-    map.addLayer(vectorLayer);
+    console.log("county basemap dl complete");
+    COUNTIES_BASEMAP_DATA = res.data;
+    return axios.get("/static/data/counties.json");
+  })
+  .then(res => {
+    console.log("county map dl complete");
+    COUNTIES_DATA = res.data;
+    renderLayers();
   })
   .catch(e => console.log(e));
