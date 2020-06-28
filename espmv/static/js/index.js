@@ -33,7 +33,7 @@ const BASE_LAYER = new TileLayer({
 });
 
 let COUNTIES_BASEMAP_DATA, COUNTIES_DATA;
-let CURRENT_STAT = "population";
+let CURRENT_STAT = "race_total_population_one_race_asian";
 // END CONFIG
 
 // BEGIN SETUP
