@@ -1,10 +1,10 @@
 import os
 
 from flask import Flask, render_template, send_from_directory
-from flask_gzip import *
+from flask_compress import Compress
 
 app = Flask(__name__)
-
+Compress(app)
 
 @app.route('/')
 def create_map():
