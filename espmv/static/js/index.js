@@ -50,7 +50,7 @@ function getStyleForFeature(statName, countyName, aggregate) {
   const maxOpacity = (statStyle.fill && statStyle.fill.a) || STYLES.default.fill.a;
   const adjustedOpacity =
     (((COUNTIES_DATA[countyName] && COUNTIES_DATA[countyName][[statName]]) || 0) / Math.max(...aggregate)) * maxOpacity;
-  console.log(statName, countyName, aggregate, adjustedOpacity);
+
   return new Style({
     stroke: new Stroke({
       color: statStyle.color || STYLES.default.color,
