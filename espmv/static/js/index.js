@@ -15,7 +15,7 @@ const GEOJSON_CONFIG = {
 const STYLES = {
   default: {
     color: "red",
-    width: 0.5,
+    width: 0.1,
     lineDash: null,
     fill: {
       r: 0,
@@ -27,7 +27,7 @@ const STYLES = {
 };
 
 const INITIAL_COORDS = [-119.6, 36.6];
-const INITIAL_ZOOM = 11;
+const INITIAL_ZOOM = 11.8;
 const BASE_LAYER = new TileLayer({
   source: new OSM({
     url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png",
@@ -36,7 +36,7 @@ const BASE_LAYER = new TileLayer({
 
 let COUNTIES_BASEMAP_DATA = {};
 let COUNTIES_DATA = {};
-let CURRENT_STAT = "race_total_population_one_race_asian";
+let CURRENT_STAT = "P0010001";
 let CURRENT_AREA = "sf";
 // END CONFIG
 
@@ -53,7 +53,7 @@ function getStyleForFeature(statName, regionName, statMax) {
   const statStyle = STYLES[statName] || {};
   const maxOpacity = (statStyle.fill && statStyle.fill.a) || STYLES.default.fill.a;
   const adjustedOpacity =
-    (((COUNTIES_DATA[regionName] && COUNTIES_DATA[regionName][[statName]]) || 0) / statMax) * maxOpacity;
+    (((COUNTIES_DATA[regionName] && COUNTIES_DATA[regionName].properties[statName]) || 0) / statMax) * maxOpacity;
 
   return new Style({
     stroke: new Stroke({
@@ -104,7 +104,7 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
   map.addLayer(BASE_LAYER);
 
   const blockGroupData = COUNTIES_BASEMAP_DATA;
-  // const statAggregate = Object.values(COUNTIES_DATA).map(countyData => countyData[statName]);
+  const statMax = Math.max(...Object.values(COUNTIES_DATA).map(countyData => countyData.properties[statName]));
 
   const features = blockGroupData.features.map(block => {
     const coords = JSON.parse(JSON.stringify(block.c));
@@ -118,7 +118,7 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
         coordinates: coords,
       },
     });
-    feature.setStyle(getStyleForFeature(statName, block.i));
+    feature.setStyle(getStyleForFeature(statName, block.i, statMax));
     return feature;
   });
 
@@ -150,12 +150,11 @@ axios
   .then(res => {
     console.log("block groups basemap dl complete");
     COUNTIES_BASEMAP_DATA = res.data;
-    renderLayers_block_groups();
-    // return axios.get("/static/data/counties.json");
+    return axios.get(`/static/data/${CURRENT_AREA}_block_groups_data.json`);
   })
-  // .then(res => {
-  //   console.log("county map dl complete");
-  //   COUNTIES_DATA = res.data;
-  //   renderLayers_counties();
-  // })
+  .then(res => {
+    console.log("block groups data dl complete");
+    COUNTIES_DATA = res.data;
+    renderLayers_block_groups();
+  })
   .catch(e => console.log(e));
