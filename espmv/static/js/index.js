@@ -39,7 +39,7 @@ var styleFunction = function (feature) {
 };
 
 axios
-  .get("/static/data/counties.json")
+  .get("/static/data/counties_basemap.json")
   .then(res => {
     console.log("county map dl complete ");
     const countiesData = res.data;
