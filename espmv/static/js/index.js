@@ -7,6 +7,9 @@ const { Tile: TileLayer, Vector: VectorLayer } = ol.layer;
 const { OSM, Vector: VectorSource } = ol.source;
 const { Circle: CircleStyle, Fill, Stroke, Style } = ol.style;
 
+let CURRENT_STAT = "P0060005%";
+let CURRENT_AREA = "sf";
+
 // BEGIN CONFIG
 const GEOJSON_CONFIG = {
   featureProjection: "EPSG:3857",
@@ -34,10 +37,9 @@ const BASE_LAYER = new TileLayer({
   }),
 });
 
-let COUNTIES_BASEMAP_DATA = {};
-let COUNTIES_DATA = {};
-let CURRENT_STAT = "P0010001";
-let CURRENT_AREA = "sf";
+let BASEMAP_DATA = {};
+let CENSUS_DATA = {};
+let CENSUS_DESCRIPTORS = {};
 // END CONFIG
 
 // BEGIN SETUP
@@ -53,7 +55,7 @@ function getStyleForFeature(statName, regionName, statMax) {
   const statStyle = STYLES[statName] || {};
   const maxOpacity = (statStyle.fill && statStyle.fill.a) || STYLES.default.fill.a;
   const adjustedOpacity =
-    (((COUNTIES_DATA[regionName] && COUNTIES_DATA[regionName].properties[statName]) || 0) / statMax) * maxOpacity;
+    (((CENSUS_DATA[regionName] && CENSUS_DATA[regionName].properties[statName]) || 0) / statMax) * maxOpacity;
 
   return new Style({
     stroke: new Stroke({
@@ -75,8 +77,8 @@ function renderLayers_counties(statName = CURRENT_STAT) {
   map.getLayers().forEach(layer => map.removeLayer(layer));
   map.addLayer(BASE_LAYER);
 
-  const countiesData = COUNTIES_BASEMAP_DATA;
-  const statAggregate = Object.values(COUNTIES_DATA).map(countyData => countyData[statName]);
+  const countiesData = BASEMAP_DATA;
+  const statAggregate = Object.values(CENSUS_DATA).map(countyData => countyData[statName]);
 
   const features = countiesData.map(county => {
     const coords = JSON.parse(JSON.stringify(county.geometry.map(c => c.map(p => parseFloat(p)))));
@@ -103,8 +105,8 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
   map.getLayers().forEach(layer => map.removeLayer(layer));
   map.addLayer(BASE_LAYER);
 
-  const blockGroupData = COUNTIES_BASEMAP_DATA;
-  const statMax = Math.max(...Object.values(COUNTIES_DATA).map(countyData => countyData.properties[statName]));
+  const blockGroupData = BASEMAP_DATA;
+  const statMax = Math.max(...Object.values(CENSUS_DATA).map(countyData => countyData.properties[statName]));
 
   const features = blockGroupData.features.map(block => {
     const coords = JSON.parse(JSON.stringify(block.c));
@@ -129,18 +131,25 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
   map.addLayer(vectorLayer);
   map.getView().setCenter(ol.proj.transform(blockGroupData.center || INITIAL_COORDS, "EPSG:4326", "EPSG:3857"));
   map.getView().setZoom(blockGroupData.zoom || INITIAL_ZOOM);
+
+  console.log("Data Reference Descriptor: ");
+  console.log(CENSUS_DESCRIPTORS[statName]);
+  if (CENSUS_DESCRIPTORS[statName].totalReference) {
+    console.log(CENSUS_DESCRIPTORS[CENSUS_DESCRIPTORS[statName].reference]);
+    console.log(CENSUS_DESCRIPTORS[CENSUS_DESCRIPTORS[statName].totalReference]);
+  }
 }
 
 // axios
 //   .get("/static/data/counties_basemap.json")
 //   .then(res => {
 //     console.log("county basemap dl complete");
-//     COUNTIES_BASEMAP_DATA = res.data;
+//     BASEMAP_DATA = res.data;
 //     return axios.get("/static/data/counties.json");
 //   })
 //   .then(res => {
 //     console.log("county map dl complete");
-//     COUNTIES_DATA = res.data;
+//     CENSUS_DATA = res.data;
 //     renderLayers_counties();
 //   })
 //   .catch(e => console.log(e));
@@ -149,12 +158,13 @@ axios
   .get(`/static/data/${CURRENT_AREA}_block_groups.json`)
   .then(res => {
     console.log("block groups basemap dl complete");
-    COUNTIES_BASEMAP_DATA = res.data;
+    BASEMAP_DATA = res.data;
     return axios.get(`/static/data/${CURRENT_AREA}_block_groups_data.json`);
   })
   .then(res => {
     console.log("block groups data dl complete");
-    COUNTIES_DATA = res.data;
+    CENSUS_DATA = res.data.blockGroups;
+    CENSUS_DESCRIPTORS = res.data.references;
     renderLayers_block_groups();
   })
   .catch(e => console.log(e));
