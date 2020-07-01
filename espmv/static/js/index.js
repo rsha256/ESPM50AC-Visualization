@@ -9,6 +9,7 @@ const { Circle: CircleStyle, Fill, Stroke, Style } = ol.style;
 
 let CURRENT_STAT = "P0060005%";
 let CURRENT_AREA = "sf";
+let CURRENT_SEA_LEVEL = "1";
 
 // BEGIN CONFIG
 const GEOJSON_CONFIG = {
@@ -21,9 +22,9 @@ const STYLES = {
     width: 0.1,
     lineDash: null,
     fill: {
-      r: 0,
+      r: 255,
       g: 0,
-      b: 255,
+      b: 0,
       a: 0.5,
     },
   },
@@ -39,6 +40,7 @@ const BASE_LAYER = new TileLayer({
 
 let BASEMAP_DATA = {};
 let CENSUS_DATA = {};
+let SEA_LEVEL_DATA = {};
 let CENSUS_DESCRIPTORS = {};
 // END CONFIG
 
@@ -105,6 +107,7 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
   map.getLayers().forEach(layer => map.removeLayer(layer));
   map.addLayer(BASE_LAYER);
 
+  // Block groups
   const blockGroupData = BASEMAP_DATA;
   const statMax = Math.max(...Object.values(CENSUS_DATA).map(countyData => countyData.properties[statName]));
 
@@ -129,6 +132,32 @@ function renderLayers_block_groups(statName = CURRENT_STAT) {
   });
 
   map.addLayer(vectorLayer);
+
+  // Sea level
+  const slFeatures = SEA_LEVEL_DATA.features.map(f => {
+    const feature = new GeoJSON(GEOJSON_CONFIG).readFeature(f);
+    feature.setStyle(
+      new Style({
+        stroke: new Stroke({
+          color: "blue",
+          width: 2,
+        }),
+        // fill: new Fill({
+        //   color: "rgba(255,0,0,0.2)",
+        // }),
+      })
+    );
+    return feature;
+  });
+  var seaLevelLayer = new VectorLayer({
+    source: new VectorSource({
+      features: slFeatures,
+    }),
+  });
+
+  map.addLayer(seaLevelLayer);
+
+  // Other stuff
   map.getView().setCenter(ol.proj.transform(blockGroupData.center || INITIAL_COORDS, "EPSG:4326", "EPSG:3857"));
   map.getView().setZoom(blockGroupData.zoom || INITIAL_ZOOM);
 
@@ -165,6 +194,11 @@ axios
     console.log("block groups data dl complete");
     CENSUS_DATA = res.data.blockGroups;
     CENSUS_DESCRIPTORS = res.data.references;
+    return axios.get(`/static/data/${CURRENT_AREA}_sea_level_${CURRENT_SEA_LEVEL}.json`);
+  })
+  .then(res => {
+    console.log("sea level data dl complete");
+    SEA_LEVEL_DATA = res.data;
     renderLayers_block_groups();
   })
   .catch(e => console.log(e));
