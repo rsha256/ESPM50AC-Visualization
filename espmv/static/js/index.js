@@ -7,7 +7,7 @@ const { Tile: TileLayer, Vector: VectorLayer } = ol.layer;
 const { OSM, Vector: VectorSource } = ol.source;
 const { Circle: CircleStyle, Fill, Stroke, Style } = ol.style;
 
-let CURRENT_STAT = "P0060005%";
+let CURRENT_STAT = "P0060003%";
 let CURRENT_AREA = "sf";
 let CURRENT_SEA_LEVEL = "1";
 
