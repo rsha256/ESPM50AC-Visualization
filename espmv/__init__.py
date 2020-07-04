@@ -14,3 +14,4 @@ def create_map():
 @app.route('/static/<path:path>')
 def send_file(path):
     return send_from_directory('./static', path)
+
