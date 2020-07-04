@@ -4,13 +4,82 @@
 <head>
     <title>ESPM Visualization</title>
     <!-- <script src="../static/js/OpenLayers.js"></script> -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css"
-        type="text/css">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css" type="text/css">
     <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
 <body>
+    <h1>Visualization</h1>
+    <div style="position: absolute;z-index: 99;left: 75%;top: 75%;border-radius: 10px 10px 10px 10px;background-color: lightgrey;padding: 3px;">
+        <div class='my-legend'>
+            <div class='legend-title'>Legend:</div>
+            <div class='legend-scale'>
+                <ul class='legend-labels'>
+                    <li><span style='background:#2346F5;'></span>1ft&nbsp;water</li>
+                </ul>
+            </div>
+        </div>
+        <br />
+        <br />
+        <br />
+        <div class='my-legend'>
+            <div class='legend-title'>African American Population Density Gradient:</div>
+            <div class='legend-scale'>
+                <ul class='legend-labels'>
+                    <li><span style='background:#F1ECE8;'></span>0 - 20%</li>
+                    <li><span style='background:#EEBCB8;'></span>40%</li>
+                    <li><span style='background:#E88F8C;'></span>60%</li>
+                    <li><span style='background:#F07C7A;'></span>80%</li>
+                    <li><span style='background:#EF6F6D;'></span>100%</li>
+                </ul>
+            </div>
+            <div class='legend-source'>Source: <a href="https://census.gov">U.S. Census</a></div>
+        </div>
+    </div>
+    <style type='text/css'>
+        .my-legend .legend-title {
+            text-align: left;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 90%;
+        }
+
+        .my-legend .legend-scale ul {
+            margin: 0;
+            padding: 0;
+            float: left;
+            list-style: none;
+        }
+
+        .my-legend .legend-scale ul li {
+            display: block;
+            float: left;
+            width: 50px;
+            margin-bottom: 6px;
+            text-align: center;
+            font-size: 80%;
+            list-style: none;
+        }
+
+        .my-legend ul.legend-labels li span {
+            display: block;
+            float: left;
+            height: 15px;
+            width: 50px;
+        }
+
+        .my-legend .legend-source {
+            font-size: 70%;
+            color: #999;
+            clear: both;
+        }
+
+        .my-legend a {
+            color: #777;
+        }
+    </style>
     <div id="mainMap" style="height:750px"></div>
     <script src="../static/js/index.js"></script>
 </body>
