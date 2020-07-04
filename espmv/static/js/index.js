@@ -34,7 +34,7 @@ const INITIAL_COORDS = [-119.6, 36.6];
 const INITIAL_ZOOM = 11.8;
 const BASE_LAYER = new TileLayer({
   source: new OSM({
-    url: "https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png",
+    url: "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
   }),
 });
 
