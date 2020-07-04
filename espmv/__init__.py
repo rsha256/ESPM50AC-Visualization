@@ -2,9 +2,11 @@ import os
 
 from flask import Flask, render_template, send_from_directory
 from flask_compress import Compress
+from flask_cors import CORS
 
 app = Flask(__name__)
 Compress(app)
+CORS(app)
 
 @app.route('/')
 def create_map():
